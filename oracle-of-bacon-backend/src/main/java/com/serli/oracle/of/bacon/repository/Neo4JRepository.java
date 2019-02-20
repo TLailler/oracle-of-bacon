@@ -1,25 +1,71 @@
 package com.serli.oracle.of.bacon.repository;
 
+import org.neo4j.driver.v1.*;
+import org.neo4j.driver.v1.types.Entity;
+import org.neo4j.driver.v1.types.Node;
+import org.neo4j.driver.v1.types.Path;
+import org.neo4j.driver.v1.types.Relationship;
 
-import org.neo4j.driver.v1.AuthTokens;
-import org.neo4j.driver.v1.Driver;
-import org.neo4j.driver.v1.GraphDatabase;
-import org.neo4j.driver.v1.Session;
+import static org.neo4j.driver.v1.Values.parameters;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class Neo4JRepository {
     private final Driver driver;
 
     public Neo4JRepository() {
-        this.driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("neo4j", "password"));
+        this.driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("neo4j", "ab65ed24c4"));
     }
 
     public List<?> getConnectionsToKevinBacon(String actorName) {
         Session session = driver.session();
 
-        // TODO implement Oracle of Bacon
-        return null;
+        Transaction transaction = session.beginTransaction();
+
+        StatementResult statementResult = transaction.run("MATCH (kb:Actors {name:{kevinBaconName}}), (ac:Actors {name: {actorName}}), sp = shortestPath((kb)-[:PLAYED_IN*]-(ac)) RETURN sp;",
+                                                        Values.parameters("kevinBaconName","Bacon, Kevin (I)","actorName", actorName));
+
+        return statementResult.list()
+                .stream()
+                .flatMap(record -> record.values().stream().map(Value::asPath))
+                .flatMap(p -> toGraphItems(p).stream())
+                .collect(Collectors.toList());
+    }
+
+    private List<GraphItem> toGraphItems(Path path) {
+        List<GraphItem> graphItems = toGraphItem(path.nodes(), this::toGraphItem);
+        graphItems.addAll(toGraphItem(path.relationships(), this::toGraphItem));
+
+        return graphItems;
+    }
+
+    private <T> List<GraphItem> toGraphItem(
+            Iterable<T> iterable,
+            Function<T, GraphItem> toGraphItem) {
+
+        return StreamSupport
+                .stream(iterable.spliterator(), false)
+                .map(toGraphItem)
+                .collect(Collectors.toList());
+    }
+
+    private GraphItem toGraphItem(Node n) {
+        String type = n.labels().iterator().next();
+        String property = type.equals("Actors") ? "name" : "title";
+
+        return new GraphNode(n.id(), n.get(property).asString(), type);
+    }
+
+    private GraphItem toGraphItem(Relationship relationship) {
+        return new GraphEdge(
+               relationship.id(), relationship.startNodeId(), relationship.endNodeId(), relationship.type()
+        );
     }
 
     public static abstract class GraphItem {
