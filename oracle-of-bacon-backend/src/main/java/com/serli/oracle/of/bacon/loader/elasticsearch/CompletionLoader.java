@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class CompletionLoader {
     private static AtomicInteger count = new AtomicInteger(0);
-    private static final long SIZE = 1048576;
+    private static final long SIZE = 104858;
     
     private static BulkRequest request = new BulkRequest();
     private static RestHighLevelClient client = ElasticSearchRepository.createClient();

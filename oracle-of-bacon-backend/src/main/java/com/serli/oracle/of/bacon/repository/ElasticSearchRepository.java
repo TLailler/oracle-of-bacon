@@ -38,7 +38,7 @@ public class ElasticSearchRepository {
     	
     	
 		SuggestionBuilder<CompletionSuggestionBuilder> completionSuggestionBuilder = 
-				SuggestBuilders.completionSuggestion("name_suggest")
+				SuggestBuilders.completionSuggestion("suggest")
 				.text(searchQuery)
 				.size(10); 
 		 	
