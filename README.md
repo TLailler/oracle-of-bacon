@@ -62,3 +62,6 @@ La livraison de votre travail s'effectue à l'aide d'une pull-request sur le rep
 <span style="color:red; font-size: 2em;">
 **Vous devez commencer par forker le repository https://github.com/nosql-bootcamp/oracle-of-bacon**
 </span>
+
+## Réponses aux questions
+* Q1 : bin/neo4j-admin import --nodes:Actors D:\Mines\NoSQL\oracle-of-bacon\imdb-data\actors.csv --nodes:Movies D:\Mines\NoSQL\oracle-of-bacon\imdb-data\movies.csv --relationships D:\Mines\NoSQL\oracle-of-bacon\imdb-data\roles.csv
