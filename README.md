@@ -65,3 +65,9 @@ La livraison de votre travail s'effectue à l'aide d'une pull-request sur le rep
 
 ## Réponses aux questions
 * Q1 : bin/neo4j-admin import --nodes:Actors D:\Mines\NoSQL\oracle-of-bacon\imdb-data\actors.csv --nodes:Movies D:\Mines\NoSQL\oracle-of-bacon\imdb-data\movies.csv --relationships D:\Mines\NoSQL\oracle-of-bacon\imdb-data\roles.csv
+
+## ÉTAT FINAL DE NOTRE AVANCEMENT
+* La partie neo4j et la partie redis fonctionnent chacune de leur côté.
+* La partie mongodb n'a pas été testée
+* La partie import elasticsearch a été réussie
+* La partie suggestion elasticsearch est faite mais ne fonctionne pas
