@@ -1,11 +1,17 @@
 package com.serli.oracle.of.bacon.repository;
 
 import org.apache.http.HttpHost;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.action.search.*;
+import org.elasticsearch.client.*;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.suggest.*;
+import org.elasticsearch.search.suggest.completion.CompletionSuggestion;
+import org.elasticsearch.search.suggest.completion.CompletionSuggestionBuilder;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ElasticSearchRepository {
 
@@ -25,7 +31,36 @@ public class ElasticSearchRepository {
     }
 
     public List<String> getActorsSuggests(String searchQuery) throws IOException {
-        // TODO implement suggest
-        return null;
+
+    	SearchRequest searchRequest = new SearchRequest("actors");
+    	SuggestBuilder suggestBuilder = new SuggestBuilder();
+    	SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+    	
+    	
+		SuggestionBuilder<CompletionSuggestionBuilder> completionSuggestionBuilder = 
+				SuggestBuilders.completionSuggestion("name_suggest")
+				.text(searchQuery)
+				.size(10); 
+		 	
+    	suggestBuilder.addSuggestion("actors_completion", completionSuggestionBuilder); 
+    	searchSourceBuilder.suggest(suggestBuilder);   	
+    	searchRequest.source(searchSourceBuilder);
+    	
+    	SearchResponse searchResponse = client.search(searchRequest);	
+    	CompletionSuggestion completionSuggestion = searchResponse.getSuggest().getSuggestion("actors_completion");
+    	
+    	List<String> suggestions = new ArrayList<>();
+    	suggestions = completionSuggestion.getEntries()
+    			.stream()
+    			.flatMap(e -> e.getOptions()
+    							.stream()
+    							.map(o -> o.getHit()
+    									.getSourceAsMap()
+    									.get("name")
+    									.toString()))
+    			.collect(Collectors.toList());
+    			
+    	
+        return suggestions;
     }
 }
